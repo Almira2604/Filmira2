@@ -3,8 +3,15 @@ import Sidebar from "./Components/Sidebar component/Sidebar";
 import Navbar from "./Components/Navbar component/Navbar";
 import Movies from "./pages/Movies";
 import Series from "./pages/Series";
-import TVShows from "./pages/TVShows";
+import TVShows from "./pages/TvShows";
 import Home from "./pages/Home";
+import Discovery from "./pages/Discovery";
+import ComingSoon from "./pages/ComingSoon";
+import Trending from "./pages/Trending";
+import Recent from "./pages/Recent";
+import TopRated from "./pages/TopRated";
+import Download from "./pages/Download";
+import Settings from "./pages/Settings";
 
 function App() {
   return (
@@ -28,6 +35,15 @@ function App() {
               <Route path="/series" element={<Series />} />
               <Route path="/tvshows" element={<TVShows />} />
               <Route path="/home" element={<Home />} />
+              <Route path="/discovery" element={<Discovery />} />
+              <Route path="/coming-soon" element={<ComingSoon />} />
+              <Route path="/trending" element={<Trending />} />
+              <Route path="/recent" element={<Recent />} />
+              <Route path="/top-rated" element={<TopRated />} />
+              <Route path="/download" element={<Download />} />
+              <Route path="/settings" element={<Settings />} />
+
+              
             </Routes>
           </div>
         </main>

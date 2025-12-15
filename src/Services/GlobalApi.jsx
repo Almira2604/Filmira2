@@ -1,13 +1,11 @@
 import axios from "axios";
 
 const movieBaseUrl = "https://api.themoviedb.org/3";
-const api_key = "549ef809c530fbe7d0f3add4b428a3dd"; // KEEP THIS SECRET IN A .env FILE IN PRODUCTION!
+const api_key = "549ef809c530fbe7d0f3add4b428a3dd"; // Move to .env in production
 
-// Re-defining these for clarity, ensure your base URLs are correct
-const movieByGenreBaseURL='https://api.themoviedb.org/3/discover/movie?api_key=' + api_key;
-const tvByGenreBaseURL = 'https://api.themoviedb.org/3/discover/tv?api_key=' + api_key;
-
-// Simple cache utility
+// ----------------------------------------------------
+// SIMPLE LOCAL STORAGE CACHE
+// ----------------------------------------------------
 const cache = {
   get: (key) => {
     const item = localStorage.getItem(key);
@@ -19,80 +17,157 @@ const cache = {
     }
     return parsed.data;
   },
-  set: (key, data, ttl = 300000) => { // 5 minutes default TTL
-    const item = {
-      data,
-      expiry: Date.now() + ttl
-    };
-    localStorage.setItem(key, JSON.stringify(item));
-  }
+  set: (key, data, ttl = 300000) => {
+    localStorage.setItem(
+      key,
+      JSON.stringify({ data, expiry: Date.now() + ttl })
+    );
+  },
 };
 
-const getTrendingVideos = () => {
-  const cacheKey = 'trending_movies';
-  const cachedData = cache.get(cacheKey);
-  if (cachedData) {
-    console.log("Using cached data for trending movies");
-    return Promise.resolve({ data: cachedData });
-  }
-  const url = movieBaseUrl + "/trending/movie/day?api_key=" + api_key;
-  console.log("API GET Request to:", url);
-  return axios.get(url).then(resp => {
-    cache.set(cacheKey, resp.data);
-    return resp;
-  });
-}
+// ----------------------------------------------------
+// API FUNCTIONS
+// ----------------------------------------------------
 
+// ⭐ Trending Movies
+const getTrendingMovies = () => {
+  const cacheKey = "trending_movies";
+  const cached = cache.get(cacheKey);
+  if (cached) return Promise.resolve({ data: cached });
+
+  return axios.get(`${movieBaseUrl}/trending/movie/day?api_key=${api_key}`)
+    .then(resp => {
+      cache.set(cacheKey, resp.data);
+      return resp;
+    });
+};
+
+// ⭐ Trending TV Shows
 const getTrendingTVShows = () => {
-  const cacheKey = 'trending_tv';
-  const cachedData = cache.get(cacheKey);
-  if (cachedData) {
-    console.log("Using cached data for trending TV shows");
-    return Promise.resolve({ data: cachedData });
-  }
-  const url = movieBaseUrl + "/trending/tv/day?api_key=" + api_key;
-  console.log("API GET Request to:", url);
-  return axios.get(url).then(resp => {
-    cache.set(cacheKey, resp.data);
-    return resp;
-  });
-}
+  const cacheKey = "trending_tv";
+  const cached = cache.get(cacheKey);
+  if (cached) return Promise.resolve({ data: cached });
 
+  return axios.get(`${movieBaseUrl}/trending/tv/day?api_key=${api_key}`)
+    .then(resp => {
+      cache.set(cacheKey, resp.data);
+      return resp;
+    });
+};
+
+// ⭐ Movies by Genre
 const getMovieByGenreId = (id) => {
-  const url = movieByGenreBaseURL + "&with_genres=" + id;
-  console.log("API GET Request to:", url);
-  return axios.get(url);
-}
+  return axios.get(`${movieBaseUrl}/discover/movie?api_key=${api_key}&with_genres=${id}`);
+};
 
+// ⭐ TV Shows by Genre
 const getSeriesByGenreId = (id) => {
   const cacheKey = `tv_genre_${id}`;
-  const cachedData = cache.get(cacheKey);
-  if (cachedData) {
-    console.log("Using cached data for TV genre:", id);
-    return Promise.resolve({ data: cachedData });
+  const cached = cache.get(cacheKey);
+  if (cached) return Promise.resolve({ data: cached });
+
+  return axios.get(`${movieBaseUrl}/discover/tv?api_key=${api_key}&with_genres=${id}`)
+    .then(resp => {
+      cache.set(cacheKey, resp.data);
+      return resp;
+    });
+};
+
+// ⭐ Upcoming Movies
+const getUpcomingMovies = () => {
+  const cacheKey = "upcoming_movies";
+  const cached = cache.get(cacheKey);
+  if (cached) return Promise.resolve({ data: cached });
+
+  return axios.get(`${movieBaseUrl}/movie/upcoming?api_key=${api_key}`)
+    .then(resp => {
+      cache.set(cacheKey, resp.data);
+      return resp;
+    });
+};
+
+// ⭐ Recent Movies (Now Playing)
+const getRecentMovies = () => {
+  const cacheKey = "recent_movies";
+  const cached = cache.get(cacheKey);
+  if (cached) return Promise.resolve({ data: cached });
+
+  return axios.get(`${movieBaseUrl}/movie/now_playing?api_key=${api_key}`)
+    .then(resp => {
+      cache.set(cacheKey, resp.data);
+      return resp;
+    });
+};
+
+// ⭐ Top Rated Movies
+const getTopRatedMovies = () => {
+  const cacheKey = "top_rated_movies";
+  const cached = cache.get(cacheKey);
+  if (cached) return Promise.resolve({ data: cached });
+
+  return axios.get(`${movieBaseUrl}/movie/top_rated?api_key=${api_key}`)
+    .then(resp => {
+      cache.set(cacheKey, resp.data);
+      return resp;
+    });
+};
+
+// ⭐ Downloadable Movies (can be top rated or trending)
+const getDownloadableMovies = () => {
+  const cacheKey = "downloadable_movies";
+  const cached = cache.get(cacheKey);
+  if (cached) return Promise.resolve({ data: cached });
+
+  // Here, using top-rated as downloadable for now
+  return axios.get(`${movieBaseUrl}/movie/top_rated?api_key=${api_key}`)
+    .then(resp => {
+      cache.set(cacheKey, resp.data);
+      return resp;
+    });
+};
+
+// ⭐ Coming Soon by Genre (movies and tv)
+const getComingSoonByGenreId = (id, type = "movie") => {
+  const cacheKey = `coming_soon_${type}_${id}`;
+  const cached = cache.get(cacheKey);
+  if (cached) return Promise.resolve({ data: cached });
+
+  let url = "";
+
+  if (type === "movie") {
+    if (id === "upcoming") {
+      url = `${movieBaseUrl}/movie/upcoming?api_key=${api_key}`;
+    } else {
+      const today = new Date().toISOString().slice(0, 10);
+      url = `${movieBaseUrl}/discover/movie?api_key=${api_key}&with_genres=${id}&primary_release_date.gte=${today}`;
+    }
+  } else {
+    url = `${movieBaseUrl}/discover/tv?api_key=${api_key}&with_genres=${id}`;
   }
-  // Note: Since this is for TV shows, it's correct to use the TV base URL
-  const url = tvByGenreBaseURL + "&with_genres=" + id;
-  console.log("API GET Request to:", url);
+
   return axios.get(url).then(resp => {
     cache.set(cacheKey, resp.data);
     return resp;
   });
-}
+};
 
-// NEW FUNCTION: Fetch the videos (trailers, clips, etc.) for a specific media item
-const getVideosByMediaId = (id, type = 'movie') => {
-    // type can be 'movie' or 'tv'
-    const url = `${movieBaseUrl}/${type}/${id}/videos?api_key=${api_key}`;
-    console.log(`API GET Request for Videos to: ${url}`);
-    return axios.get(url);
-}
+// ⭐ Videos / Trailers
+const getVideosByMediaId = (id, type = "movie") => {
+  return axios.get(`${movieBaseUrl}/${type}/${id}/videos?api_key=${api_key}`);
+};
 
-
+// ----------------------------------------------------
+// EXPORT
+// ----------------------------------------------------
 export default {
-  getTrendingVideos,
+  getTrendingMovies,
   getTrendingTVShows,
   getMovieByGenreId,
   getSeriesByGenreId,
-  getVideosByMediaId // Export the new function
-}
+  getUpcomingMovies,
+  getRecentMovies,
+  getTopRatedMovies,
+  getDownloadableMovies, // <- added for Download.jsx
+  getComingSoonByGenreId,
+  getVideosByMediaId,
+};

@@ -34,7 +34,7 @@ function ProductionHouse() {
   }, []);
 
   return (
-    <div className="px-4 gap-5 sm:px-6 md:px-10 mt-6">
+    <div className="px-4 gap-10 sm:px-6 md:px-10 mt-6">
       <div
         ref={scrollRef}
         className="

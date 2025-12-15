@@ -14,7 +14,7 @@ function Slider() {
   }, []);
 
   const getTrendingMovies = () => {
-    GlobalApi.getTrendingVideos().then((resp) => {
+    GlobalApi.getTrendingMovies().then((resp) => {
       setMovieList(resp.data.results || []);
     }).catch((err) => {
       console.error("Failed to fetch trending movies:", err);

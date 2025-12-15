@@ -1,4 +1,5 @@
-const genere= [ { id: 10759, name: "Action & Adventure" },
+const genere = [
+  { id: 10759, name: "Action & Adventure" },
   { id: 16, name: "Animation" },
   { id: 35, name: "Comedy" },
   { id: 80, name: "Crime" },
@@ -18,6 +19,5 @@ const genere= [ { id: 10759, name: "Action & Adventure" },
   { id: 10764, name: "Reality" },
   { id: 10767, name: "Talk" },
 ];
-  export default{
-    genere
-  }
+
+export default { genere };
